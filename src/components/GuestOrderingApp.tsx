@@ -17,13 +17,12 @@ const FOOD_PHOTO: Record<string, string> = {
   "Chicken":                 "/food/chicken.jpg",
   "Turkey":                  "/food/turkey.jpg",
   "Croaker Fish":            "/food/croaker-fish.jpg",
+  "Efo Riro":                "/food/efo-riro.jpg",
+  "Egusi":                   "/food/egusi.jpg",
+  "Ewedu and Gbegiri":       "/food/ewedu-gbegiri.jpg",
 };
 
-const FOOD_EMOJI: Record<string, string> = {
-  "Efo Riro":          "🥬",
-  "Egusi":             "🌿",
-  "Ewedu and Gbegiri": "🍵",
-};
+const FOOD_EMOJI: Record<string, string> = {};
 
 function FoodIcon({ name, size = "text-3xl" }: { name: string; size?: string }) {
   const photo = FOOD_PHOTO[name];
@@ -252,7 +251,7 @@ export default function GuestOrderingApp({ initialTable }: { initialTable?: numb
         <div className="px-5 pt-8 pb-safe">
           <BackBtn from="meal" />
           <h2 className="text-[1.6rem] font-bold text-gray-900 leading-tight mb-1">Choose your meal</h2>
-          <p className="text-sm text-gray-400 mb-6">Hi {name} 👋 What are you having?</p>
+          <p className="text-sm text-gray-400 mb-6">What are you having today?</p>
           <div className="space-y-3 pb-8">
             {mains.map(item => {
               const soldOut = item.stock <= 0;
@@ -386,7 +385,7 @@ export default function GuestOrderingApp({ initialTable }: { initialTable?: numb
           <button onClick={submit} disabled={submitting}
             className="w-full text-white font-bold rounded-2xl transition-all active:scale-[0.97] shadow-lg disabled:opacity-50"
             style={{ background: "linear-gradient(135deg, #0a3d20 0%, #155d36 100%)", padding: "18px 0", fontSize: 17, minHeight: 56 }}>
-            {submitting ? "Sending order…" : "Place order 🎉"}
+            {submitting ? "Sending order…" : "Place order"}
           </button>
 
           <button onClick={() => setStep("meal")}
