@@ -15,7 +15,21 @@ const NEXT: Record<OrderStatus, OrderStatus | null> = {
   ready: null,
 };
 
-type Tab = "orders" | "completed" | "reset";
+type Tab = "orders" | "completed" | "groups" | "reset";
+
+function waitingLabel(createdAt: string): string {
+  const mins = Math.floor((Date.now() - new Date(createdAt).getTime()) / 60000);
+  if (mins < 1) return "Just now";
+  if (mins === 1) return "1 min";
+  return `${mins} mins`;
+}
+
+function waitingColor(createdAt: string): string {
+  const mins = Math.floor((Date.now() - new Date(createdAt).getTime()) / 60000);
+  if (mins >= 15) return "text-red-500";
+  if (mins >= 8)  return "text-orange-500";
+  return "text-gray-400";
+}
 
 export default function KitchenDashboard() {
   const [orders, setOrders]       = useState<Order[]>([]);
@@ -102,6 +116,7 @@ export default function KitchenDashboard() {
         {([
           ["orders",    `Live (${active.length})`],
           ["completed", `Done (${completed.length})`],
+          ["groups",    "Groups"],
           ["reset",     "Reset"],
         ] as [Tab, string][]).map(([t, label]) => (
           <button key={t} onClick={() => setTab(t)}
@@ -260,6 +275,48 @@ export default function KitchenDashboard() {
         </div>
       )}
 
+      {/* ── Groups ── */}
+      {tab === "groups" && (
+        <div className="space-y-3">
+          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-3">
+            Bulk view — all active + completed orders
+          </p>
+          {(() => {
+            // Aggregate all orders by main dish
+            const groups: Record<string, { count: number; addons: Record<string, number>; plantainCount: number }> = {};
+            for (const o of orders) {
+              for (const item of o.items) {
+                if (!groups[item.name]) groups[item.name] = { count: 0, addons: {}, plantainCount: 0 };
+                groups[item.name].count++;
+                const addonKey = [item.addon, item.protein].filter(Boolean).join(" + ");
+                if (addonKey) groups[item.name].addons[addonKey] = (groups[item.name].addons[addonKey] ?? 0) + 1;
+                if (item.plantain) groups[item.name].plantainCount++;
+              }
+            }
+            const entries = Object.entries(groups).sort((a, b) => b[1].count - a[1].count);
+            if (entries.length === 0) return <p className="text-gray-300 text-center py-12 text-sm">No orders yet</p>;
+            return entries.map(([dish, data]) => (
+              <div key={dish} className="bg-white border border-gray-100 rounded-2xl px-4 py-4 shadow-sm">
+                <div className="flex items-center justify-between mb-2">
+                  <p className="font-bold text-gray-900">{dish}</p>
+                  <span className="text-2xl font-black text-[#0a3d20]">×{data.count}</span>
+                </div>
+                {Object.entries(data.addons).map(([addon, n]) => (
+                  <p key={addon} className="text-sm text-gray-500 flex justify-between">
+                    <span>{addon}</span><span className="font-semibold">×{n}</span>
+                  </p>
+                ))}
+                {data.plantainCount > 0 && (
+                  <p className="text-sm text-gray-500 flex justify-between">
+                    <span>With plantain</span><span className="font-semibold">×{data.plantainCount}</span>
+                  </p>
+                )}
+              </div>
+            ));
+          })()}
+        </div>
+      )}
+
       {/* ── Reset ── */}
       {tab === "reset" && (
         <div className="space-y-4">
@@ -328,6 +385,9 @@ function OrderCard({ order, onAdvance }: { order: Order; onAdvance: (o: Order) =
         <div>
           <p className="font-bold text-gray-900 text-base">{order.guestName}</p>
           <p className="text-xs text-gray-400 mt-0.5">Table {order.tableNumber}</p>
+          <p className={`text-xs font-semibold mt-0.5 ${waitingColor(order.createdAt)}`}>
+            Waiting: {waitingLabel(order.createdAt)}
+          </p>
         </div>
         <span className="flex items-center gap-1.5 text-xs font-semibold text-gray-500 bg-gray-50 border border-gray-100 rounded-full px-2.5 py-1">
           <span className={`w-2 h-2 rounded-full ${meta.dot}`} />

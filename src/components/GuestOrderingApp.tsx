@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { MenuItem } from "@/lib/types";
-import { PROTEINS, SOUPS } from "@/lib/menu";
+import { PROTEINS_RICE, PROTEINS_SWALLOW, SOUPS } from "@/lib/menu";
 
 type Step = "info" | "meal" | "soup" | "protein_req" | "protein_opt" | "plantain" | "confirm" | "done";
 
@@ -80,7 +80,7 @@ export default function GuestOrderingApp({ initialTable }: { initialTable?: numb
   useEffect(() => {
     const deviceId = getDeviceId();
     fetch("/api/state").then(r => r.json()).then(data => {
-      setMains((data.menu as MenuItem[]).filter(m => m.category === "main" && m.stock > 0));
+      setMains((data.menu as MenuItem[]).filter(m => m.category === "main"));
       if (hasOrdered()) {
         const exists = (data.orders as { deviceId: string }[]).some(o => o.deviceId === deviceId);
         if (exists) setAlreadyOrdered(true);
@@ -254,23 +254,38 @@ export default function GuestOrderingApp({ initialTable }: { initialTable?: numb
           <h2 className="text-[1.6rem] font-bold text-gray-900 leading-tight mb-1">Choose your meal</h2>
           <p className="text-sm text-gray-400 mb-6">Hi {name} 👋 What are you having?</p>
           <div className="space-y-3 pb-8">
-            {mains.map(item => (
-              <button key={item.name} onClick={() => pickMain(item)}
-                className="w-full text-left bg-white border-2 border-gray-100 hover:border-[#0a3d20] active:scale-[0.98] rounded-2xl px-5 py-4 transition-all group shadow-sm"
-                style={{ minHeight: 72 }}>
-                <div className="flex items-center gap-4">
-                  <FoodIcon name={item.name} />
-                  <div className="flex-1 min-w-0">
-                    <p className="font-bold text-gray-900 text-base leading-snug">{item.name}</p>
-                    {item.requiresProtein && <p className="text-xs text-gray-400 mt-0.5">Choose a protein →</p>}
-                    {item.requiresSoup && item.optionalProtein && <p className="text-xs text-gray-400 mt-0.5">Choose a soup + optional protein →</p>}
-                    {item.requiresSoup && !item.optionalProtein && <p className="text-xs text-gray-400 mt-0.5">Choose a soup →</p>}
-                    {item.optionalPlantain && !item.requiresProtein && <p className="text-xs text-gray-400 mt-0.5">Optional plantain →</p>}
+            {mains.map(item => {
+              const soldOut = item.stock <= 0;
+              return soldOut ? (
+                <div key={item.name}
+                  className="w-full bg-gray-50 border-2 border-gray-100 rounded-2xl px-5 py-4 opacity-60"
+                  style={{ minHeight: 72 }}>
+                  <div className="flex items-center gap-4">
+                    <FoodIcon name={item.name} />
+                    <div className="flex-1 min-w-0">
+                      <p className="font-bold text-gray-400 text-base line-through">{item.name}</p>
+                      <p className="text-xs text-red-400 mt-0.5">Sorry, out of stock — speak to a server</p>
+                    </div>
                   </div>
-                  <span className="text-xl text-gray-200 group-hover:text-[#0a3d20] transition-colors">›</span>
                 </div>
-              </button>
-            ))}
+              ) : (
+                <button key={item.name} onClick={() => pickMain(item)}
+                  className="w-full text-left bg-white border-2 border-gray-100 hover:border-[#0a3d20] active:scale-[0.98] rounded-2xl px-5 py-4 transition-all group shadow-sm"
+                  style={{ minHeight: 72 }}>
+                  <div className="flex items-center gap-4">
+                    <FoodIcon name={item.name} />
+                    <div className="flex-1 min-w-0">
+                      <p className="font-bold text-gray-900 text-base leading-snug">{item.name}</p>
+                      {item.requiresProtein && <p className="text-xs text-gray-400 mt-0.5">Choose a protein →</p>}
+                      {item.requiresSoup && item.optionalProtein && <p className="text-xs text-gray-400 mt-0.5">Choose a soup + optional protein →</p>}
+                      {item.requiresSoup && !item.optionalProtein && <p className="text-xs text-gray-400 mt-0.5">Choose a soup →</p>}
+                      {item.optionalPlantain && <p className="text-xs text-gray-400 mt-0.5">Optional plantain →</p>}
+                    </div>
+                    <span className="text-xl text-gray-200 group-hover:text-[#0a3d20] transition-colors">›</span>
+                  </div>
+                </button>
+              );
+            })}
           </div>
         </div>
       )}
@@ -291,7 +306,7 @@ export default function GuestOrderingApp({ initialTable }: { initialTable?: numb
           <BackBtn from="protein_req" />
           <h2 className="text-[1.6rem] font-bold text-gray-900 mb-1">Pick your protein</h2>
           <p className="text-sm text-gray-400 mb-6">Goes with your {main.name}</p>
-          <ChoiceList choices={PROTEINS} onPick={p => { setProtein(p); advance("protein_req"); }} />
+          <ChoiceList choices={PROTEINS_RICE} onPick={p => { setProtein(p); advance("protein_req"); }} />
         </div>
       )}
 
@@ -302,7 +317,7 @@ export default function GuestOrderingApp({ initialTable }: { initialTable?: numb
           <h2 className="text-[1.6rem] font-bold text-gray-900 mb-1">Add a protein?</h2>
           <p className="text-sm text-gray-400 mb-6">Optional — skip if you don't want one</p>
           <ChoiceList
-            choices={PROTEINS}
+            choices={PROTEINS_SWALLOW}
             onPick={p => { setProtein(p); advance("protein_opt"); }}
             skipLabel="No protein, thanks"
           />
@@ -382,20 +397,38 @@ export default function GuestOrderingApp({ initialTable }: { initialTable?: numb
       )}
 
       {/* ── Done ── */}
-      {step === "done" && (
-        <div className="flex flex-col items-center justify-center px-6 py-20 text-center space-y-4">
-          <div className="text-6xl mb-2">🎉</div>
-          <h2 className="text-3xl font-black text-[#0a3d20] leading-tight" style={{ fontFamily: "var(--font-playfair)" }}>
-            Order placed!
-          </h2>
-          <p className="text-gray-500 text-base leading-relaxed">
-            Thank you, <strong className="text-gray-800">{name}</strong>!<br />
-            Your food is heading to table <strong className="text-gray-800">{table}</strong>.<br />
-            Enjoy the celebration!
-          </p>
-          <div className="flex justify-center gap-3 pt-2 text-3xl">
-            <span>🍚</span><span>🍗</span><span>🌴</span>
+      {step === "done" && main && (
+        <div className="px-5 pt-10 pb-safe space-y-6">
+          <div>
+            <h2 className="text-3xl font-black text-[#0a3d20]" style={{ fontFamily: "var(--font-playfair)" }}>
+              Order placed
+            </h2>
+            <p className="text-gray-400 text-sm mt-1">Your order is with the kitchen</p>
           </div>
+
+          <div className="rounded-3xl overflow-hidden border border-gray-100 shadow-sm">
+            <div className="px-5 py-5" style={{ background: "linear-gradient(135deg, #0a3d20, #0f5530)" }}>
+              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#c9a84c] mb-1">Guest</p>
+              <p className="text-white font-bold text-xl">{name}</p>
+              <p className="text-green-300 text-sm mt-0.5">Table {table}</p>
+            </div>
+            <div className="bg-white px-5 py-5 space-y-3">
+              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400">Your order</p>
+              <div className="flex items-start gap-3">
+                <FoodIcon name={main.name} size="text-2xl" />
+                <div>
+                  <p className="font-bold text-gray-900">{main.name}</p>
+                  {soup    && <p className="text-sm text-gray-500">Soup: {soup}</p>}
+                  {protein && <p className="text-sm text-gray-500">Protein: {protein}</p>}
+                  {main.optionalPlantain && (
+                    <p className="text-sm text-gray-500">{plantain ? "Plantain: yes" : "Plantain: no"}</p>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <p className="text-sm text-gray-400 text-center">Enjoy the celebration!</p>
         </div>
       )}
     </div>

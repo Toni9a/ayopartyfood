@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { addOrder, findOrderByDevice, getMenu, getOrders } from "@/lib/store";
 import { Order, OrderItem } from "@/lib/types";
-import { PROTEINS, SOUPS } from "@/lib/menu";
+import { ALL_PROTEINS, SOUPS } from "@/lib/menu";
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
@@ -21,13 +21,13 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid main item" }, { status: 400 });
   }
 
-  if (mainItem.requiresProtein && !PROTEINS.includes(addon)) {
+  if (mainItem.requiresProtein && !ALL_PROTEINS.includes(addon)) {
     return NextResponse.json({ error: "Protein choice required" }, { status: 400 });
   }
   if (mainItem.requiresSoup && !SOUPS.includes(addon)) {
     return NextResponse.json({ error: "Soup choice required" }, { status: 400 });
   }
-  if (mainItem.optionalProtein && protein && !PROTEINS.includes(protein)) {
+  if (mainItem.optionalProtein && protein && !ALL_PROTEINS.includes(protein)) {
     return NextResponse.json({ error: "Invalid protein choice" }, { status: 400 });
   }
 

@@ -1,12 +1,23 @@
 import { MenuItem } from "./types";
 
-export const PROTEINS = [
+// Rice dishes: no mixed protein
+export const PROTEINS_RICE    = ["Chicken", "Turkey", "Croaker Fish"];
+// Swallow dishes: all proteins including mixed
+export const PROTEINS_SWALLOW = [
   "Mixed protein (Beef, shaki, ponmo, Inu eran)",
   "Chicken",
   "Turkey",
   "Croaker Fish",
 ];
-export const SOUPS    = ["Efo Riro", "Egusi", "Ewedu and Gbegiri"];
+export const SOUPS = ["Efo Riro", "Egusi", "Ewedu and Gbegiri"];
+
+// Keep a flat list for validation
+export const ALL_PROTEINS = [
+  "Mixed protein (Beef, shaki, ponmo, Inu eran)",
+  "Chicken",
+  "Turkey",
+  "Croaker Fish",
+];
 
 function item(
   name: string,
@@ -18,18 +29,17 @@ function item(
 }
 
 export const DEFAULT_MENU: MenuItem[] = [
-  // Rice dishes — protein required, plantain optional
+  // Rice — protein required (no mixed), plantain optional
   item("Jollof Rice",             "main", 50, { requiresProtein: true, optionalPlantain: true }),
   item("Fried Rice",              "main", 50, { requiresProtein: true, optionalPlantain: true }),
-  // Ofada — plantain optional, NO protein
+  // Ofada — plantain optional only, no protein
   item("Ofada and Ayamase Sauce", "main", 20, { optionalPlantain: true }),
 
-  // Swallows — soup required + optional protein (except Yam Porridge: no addons)
+  // Swallows — soup required; amala + pounded yam get optional protein (all proteins)
   item("Amala / Abula", "main", 25, { requiresSoup: true, optionalProtein: true }),
   item("Pound Yam",     "main", 25, { requiresSoup: true, optionalProtein: true }),
   item("Yam Porridge",  "main", 15),
 
-  // Sides / soups / proteins (not shown to guests as standalone)
   item("Plantain",          "side",    30),
   item("Efo Riro",          "soup",    20),
   item("Egusi",             "soup",    20),
@@ -39,7 +49,3 @@ export const DEFAULT_MENU: MenuItem[] = [
   item("Turkey",            "protein", 20),
   item("Croaker Fish",      "protein", 20),
 ];
-
-export function guestMains(menu: MenuItem[]) {
-  return menu.filter((m) => m.category === "main");
-}
