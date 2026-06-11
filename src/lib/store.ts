@@ -15,10 +15,12 @@ function rowToMenuItem(r: Record<string, unknown>): MenuItem {
   return {
     name:            r.name as string,
     category:        r.category as MenuItem["category"],
-    stock:           Number(r.stock),
-    initialStock:    Number(r.initial_stock),
-    requiresProtein: Boolean(r.requires_protein),
-    requiresSoup:    Boolean(r.requires_soup),
+    stock:            Number(r.stock),
+    initialStock:     Number(r.initial_stock),
+    requiresProtein:  Boolean(r.requires_protein),
+    requiresSoup:     Boolean(r.requires_soup),
+    optionalProtein:  Boolean(r.optional_protein),
+    optionalPlantain: Boolean(r.optional_plantain),
   };
 }
 
