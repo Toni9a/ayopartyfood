@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { addOrder, findOrderByDevice, getMenu } from "@/lib/store";
+import { addOrder, findOrderByDevice, getMenu, getOrders } from "@/lib/store";
 import { Order } from "@/lib/types";
 import { PROTEINS, SOUPS } from "@/lib/menu";
 
@@ -11,11 +11,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
   }
 
-  if (findOrderByDevice(deviceId)) {
+  if (await findOrderByDevice(deviceId)) {
     return NextResponse.json({ error: "Device has already ordered" }, { status: 409 });
   }
 
-  const menu = getMenu();
+  const menu = await getMenu();
   const mainItem = menu.find((m) => m.name === mainName && m.category === "main");
   if (!mainItem) {
     return NextResponse.json({ error: "Invalid main item" }, { status: 400 });
@@ -29,7 +29,6 @@ export async function POST(req: NextRequest) {
   }
 
   const plantain = menu.find((m) => m.name === "Plantain");
-
   const items = [
     { name: mainName, addon: addon || undefined },
     ...(plantain ? [{ name: "Plantain" }] : []),
@@ -45,11 +44,10 @@ export async function POST(req: NextRequest) {
     createdAt: new Date().toISOString(),
   };
 
-  addOrder(order);
+  await addOrder(order);
   return NextResponse.json(order, { status: 201 });
 }
 
 export async function GET() {
-  const { getOrders } = await import("@/lib/store");
-  return NextResponse.json(getOrders());
+  return NextResponse.json(await getOrders());
 }
