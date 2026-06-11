@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { addOrder, findOrderByDevice, getMenu, getOrders } from "@/lib/store";
-import { Order } from "@/lib/types";
+import { Order, OrderItem } from "@/lib/types";
 import { PROTEINS, SOUPS } from "@/lib/menu";
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
-  const { deviceId, guestName, tableNumber, mainName, addon } = body;
+  const { deviceId, guestName, tableNumber, mainName, addon, protein, plantain } = body;
 
   if (!deviceId || !guestName || !tableNumber || !mainName) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
@@ -27,19 +27,23 @@ export async function POST(req: NextRequest) {
   if (mainItem.requiresSoup && !SOUPS.includes(addon)) {
     return NextResponse.json({ error: "Soup choice required" }, { status: 400 });
   }
+  if (mainItem.optionalProtein && protein && !PROTEINS.includes(protein)) {
+    return NextResponse.json({ error: "Invalid protein choice" }, { status: 400 });
+  }
 
-  const plantain = menu.find((m) => m.name === "Plantain");
-  const items = [
-    { name: mainName, addon: addon || undefined },
-    ...(plantain ? [{ name: "Plantain" }] : []),
-  ];
+  const mainOrderItem: OrderItem = {
+    name: mainName,
+    addon: addon || undefined,
+    protein: protein || undefined,
+    plantain: mainItem.optionalPlantain ? Boolean(plantain) : undefined,
+  };
 
   const order: Order = {
     id: crypto.randomUUID(),
     deviceId,
     guestName: guestName.trim(),
     tableNumber: Number(tableNumber),
-    items,
+    items: [mainOrderItem],
     status: "queued",
     createdAt: new Date().toISOString(),
   };

@@ -25,8 +25,11 @@ export default function KitchenDashboard() {
   const [resetMsg, setResetMsg]   = useState("");
   const [selectedName, setSelectedName] = useState("");
   const [stockOpen, setStockOpen] = useState(false);
+  const [pulse, setPulse]         = useState(false);
 
   const refresh = useCallback(async () => {
+    setPulse(true);
+    setTimeout(() => setPulse(false), 600);
     const [oRes, mRes] = await Promise.all([
       fetch("/api/orders"),
       fetch("/api/kitchen/menu"),
@@ -37,7 +40,7 @@ export default function KitchenDashboard() {
 
   useEffect(() => {
     refresh();
-    const id = setInterval(refresh, 5000);
+    const id = setInterval(refresh, 3000);
     return () => clearInterval(id);
   }, [refresh]);
 
@@ -87,6 +90,12 @@ export default function KitchenDashboard() {
 
   return (
     <div className="max-w-xl mx-auto px-4 py-5 pb-safe">
+
+      {/* ── Live indicator ── */}
+      <div className="flex items-center gap-2 mb-4">
+        <span className={`w-2 h-2 rounded-full transition-all ${pulse ? "bg-green-400 scale-125" : "bg-green-500"}`} />
+        <span className="text-xs text-gray-400 font-medium">Live · refreshes every 3s</span>
+      </div>
 
       {/* ── Tab bar ── */}
       <div className="flex gap-1 bg-gray-100 rounded-2xl p-1 mb-5">
@@ -232,7 +241,12 @@ export default function KitchenDashboard() {
                     {order.items.map((item, i) => (
                       <li key={i} className="flex items-center gap-2 text-sm text-gray-600">
                         <span className="w-1 h-1 rounded-full bg-gray-300 flex-shrink-0" />
-                        {item.name}{item.addon ? ` + ${item.addon}` : ""}
+                        <span>
+                          {item.name}
+                          {item.addon   ? ` + ${item.addon}`   : ""}
+                          {item.protein ? ` + ${item.protein}` : ""}
+                          {item.plantain ? " + Plantain"        : ""}
+                        </span>
                       </li>
                     ))}
                   </ul>
@@ -325,7 +339,12 @@ function OrderCard({ order, onAdvance }: { order: Order; onAdvance: (o: Order) =
         {order.items.map((item, i) => (
           <li key={i} className="flex items-center gap-2 text-sm text-gray-700">
             <span className="w-1 h-1 rounded-full bg-gray-300 flex-shrink-0" />
-            {item.name}{item.addon ? ` + ${item.addon}` : ""}
+            <span>
+              {item.name}
+              {item.addon   ? ` + ${item.addon}`   : ""}
+              {item.protein ? ` + ${item.protein}` : ""}
+              {item.plantain ? " + Plantain"        : ""}
+            </span>
           </li>
         ))}
       </ul>
