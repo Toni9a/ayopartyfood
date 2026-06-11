@@ -59,3 +59,18 @@ export function resetDevice(deviceId: string): boolean {
   state.orders.splice(index, 1);
   return true;
 }
+
+export function resetByName(guestName: string): boolean {
+  const index = state.orders.findIndex(
+    (o) => o.guestName.toLowerCase() === guestName.toLowerCase()
+  );
+  if (index === -1) return false;
+  state.orders.splice(index, 1);
+  return true;
+}
+
+export function resetAll(): number {
+  const count = state.orders.length;
+  state.orders.splice(0, count);
+  return count;
+}

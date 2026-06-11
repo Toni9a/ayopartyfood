@@ -1,12 +1,26 @@
 import { NextRequest, NextResponse } from "next/server";
-import { resetDevice } from "@/lib/store";
+import { resetDevice, resetByName, resetAll } from "@/lib/store";
 
 export async function DELETE(req: NextRequest) {
-  const { deviceId } = await req.json();
-  if (!deviceId) {
-    return NextResponse.json({ error: "deviceId required" }, { status: 400 });
+  const body = await req.json();
+  const { action, deviceId, guestName } = body;
+
+  if (action === "all") {
+    const count = resetAll();
+    return NextResponse.json({ success: true, count });
   }
-  const ok = resetDevice(deviceId);
-  if (!ok) return NextResponse.json({ error: "No order found for device" }, { status: 404 });
-  return NextResponse.json({ success: true });
+
+  if (action === "name" && guestName) {
+    const ok = resetByName(guestName);
+    if (!ok) return NextResponse.json({ error: "No order found for that name" }, { status: 404 });
+    return NextResponse.json({ success: true });
+  }
+
+  if (deviceId) {
+    const ok = resetDevice(deviceId);
+    if (!ok) return NextResponse.json({ error: "No order found for device" }, { status: 404 });
+    return NextResponse.json({ success: true });
+  }
+
+  return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
 }

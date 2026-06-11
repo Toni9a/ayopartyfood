@@ -3,21 +3,30 @@ import { MenuItem } from "./types";
 export const PROTEINS = ["Beef", "Chicken", "Turkey", "Croaker Fish"];
 export const SOUPS = ["Efo Riro", "Egusi", "Ewedu and Gbegiri"];
 
+function item(
+  name: string,
+  category: MenuItem["category"],
+  stock: number,
+  opts?: Pick<MenuItem, "requiresProtein" | "requiresSoup">
+): MenuItem {
+  return { name, category, stock, initialStock: stock, ...opts };
+}
+
 export const DEFAULT_MENU: MenuItem[] = [
-  { name: "Jollof Rice",              category: "main", requiresProtein: true,  stock: 50 },
-  { name: "Fried Rice",               category: "main", requiresProtein: true,  stock: 50 },
-  { name: "Ofada and Ayamase Sauce",  category: "main", requiresProtein: true,  stock: 20 },
-  { name: "Amala / Abula",            category: "main", requiresSoup: true,     stock: 25 },
-  { name: "Pound Yam",                category: "main", requiresSoup: true,     stock: 25 },
-  { name: "Yam Porridge",             category: "main", requiresSoup: true,     stock: 15 },
-  { name: "Plantain",                 category: "side",                         stock: 30 },
-  { name: "Efo Riro",                 category: "soup",                         stock: 20 },
-  { name: "Egusi",                    category: "soup",                         stock: 20 },
-  { name: "Ewedu and Gbegiri",        category: "soup",                         stock: 20 },
-  { name: "Beef",                     category: "protein",                      stock: 20 },
-  { name: "Chicken",                  category: "protein",                      stock: 20 },
-  { name: "Turkey",                   category: "protein",                      stock: 20 },
-  { name: "Croaker Fish",             category: "protein",                      stock: 20 },
+  item("Jollof Rice",             "main",    50, { requiresProtein: true }),
+  item("Fried Rice",              "main",    50, { requiresProtein: true }),
+  item("Ofada and Ayamase Sauce", "main",    20, { requiresProtein: true }),
+  item("Amala / Abula",           "main",    25, { requiresSoup: true }),
+  item("Pound Yam",               "main",    25, { requiresSoup: true }),
+  item("Yam Porridge",            "main",    15, { requiresSoup: true }),
+  item("Plantain",                "side",    30),
+  item("Efo Riro",                "soup",    20),
+  item("Egusi",                   "soup",    20),
+  item("Ewedu and Gbegiri",       "soup",    20),
+  item("Beef",                    "protein", 20),
+  item("Chicken",                 "protein", 20),
+  item("Turkey",                  "protein", 20),
+  item("Croaker Fish",            "protein", 20),
 ];
 
 // Only mains are shown to guests

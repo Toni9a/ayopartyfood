@@ -21,6 +21,7 @@ export interface MenuItem {
   requiresProtein?: boolean;
   requiresSoup?: boolean;
   stock: number;
+  initialStock: number;
 }
 
 export interface StoreState {
