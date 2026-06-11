@@ -6,31 +6,36 @@ import { PROTEINS, SOUPS } from "@/lib/menu";
 
 type Step = "info" | "meal" | "soup" | "protein_req" | "protein_opt" | "plantain" | "confirm" | "done";
 
+const FOOD_PHOTO: Record<string, string> = {
+  "Jollof Rice":             "/food/jollof-rice.jpg",
+  "Fried Rice":              "/food/fried-rice.jpg",
+  "Ofada and Ayamase Sauce": "/food/ofada.jpg",
+  "Amala / Abula":           "/food/amala.jpg",
+  "Pound Yam":               "/food/pounded-yam.jpg",
+  "Yam Porridge":            "/food/yam-porridge.jpg",
+  "Mixed protein (Beef, shaki, ponmo, Inu eran)": "/food/mixed-protein.jpg",
+  "Chicken":                 "/food/chicken.jpg",
+  "Turkey":                  "/food/turkey.jpg",
+  "Croaker Fish":            "/food/croaker-fish.jpg",
+};
+
 const FOOD_EMOJI: Record<string, string> = {
-  "Jollof Rice":             "jollof",   // special: tinted emoji
-  "Fried Rice":              "🍛",
-  "Ofada and Ayamase Sauce": "🌶️",
-  "Amala / Abula":           "🫕",
-  "Pound Yam":               "🍠",
-  "Yam Porridge":            "🥘",
-  "Beef":                    "🥩",
-  "Chicken":                 "🍗",
-  "Turkey":                  "🦃",
-  "Croaker Fish":            "🐟",
-  "Efo Riro":                "🥬",
-  "Egusi":                   "🌿",
-  "Ewedu and Gbegiri":       "🍵",
+  "Efo Riro":          "🥬",
+  "Egusi":             "🌿",
+  "Ewedu and Gbegiri": "🍵",
 };
 
 function FoodIcon({ name, size = "text-3xl" }: { name: string; size?: string }) {
-  if (name === "Jollof Rice") {
+  const photo = FOOD_PHOTO[name];
+  if (photo) {
+    const px = size === "text-2xl" ? 44 : 56;
     return (
-      <span
-        className={`${size} leading-none`}
-        style={{ filter: "sepia(1) saturate(5) hue-rotate(-15deg)" }}
-      >
-        🍚
-      </span>
+      <img
+        src={photo}
+        alt={name}
+        className="rounded-xl object-cover flex-shrink-0"
+        style={{ width: px, height: px }}
+      />
     );
   }
   return <span className={`${size} leading-none`}>{FOOD_EMOJI[name] ?? "🍽️"}</span>;
@@ -180,9 +185,7 @@ export default function GuestOrderingApp({ initialTable }: { initialTable?: numb
               <h2 className="text-4xl font-black text-gray-900" style={{ fontFamily: "var(--font-playfair)" }}>
                 Table {table}
               </h2>
-              <p className="text-sm text-gray-400 mt-2 leading-relaxed">
-                Please enter your name, confirm your table, and choose your meal. Swallow dishes need a soup, and rice or yam dishes can take a protein. One order is allowed per device.
-              </p>
+              <p className="text-sm text-gray-400 mt-2">Please choose your name and table number</p>
             </div>
 
             {/* Name input */}
@@ -229,11 +232,6 @@ export default function GuestOrderingApp({ initialTable }: { initialTable?: numb
               </div>
             </div>
 
-            {/* Device rule */}
-            <div className="rounded-2xl px-5 py-4" style={{ background: "#0a3d20" }}>
-              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#c9a84c] mb-1">Device Rule</p>
-              <p className="text-white text-sm leading-relaxed">This device can place one order.</p>
-            </div>
           </div>
 
           {error && <div className="bg-red-50 border border-red-100 rounded-2xl px-4 py-3">
@@ -265,8 +263,9 @@ export default function GuestOrderingApp({ initialTable }: { initialTable?: numb
                   <div className="flex-1 min-w-0">
                     <p className="font-bold text-gray-900 text-base leading-snug">{item.name}</p>
                     {item.requiresProtein && <p className="text-xs text-gray-400 mt-0.5">Choose a protein →</p>}
-                    {item.requiresSoup && item.optionalProtein && <p className="text-xs text-gray-400 mt-0.5">Choose soup + optional protein →</p>}
+                    {item.requiresSoup && item.optionalProtein && <p className="text-xs text-gray-400 mt-0.5">Choose a soup + optional protein →</p>}
                     {item.requiresSoup && !item.optionalProtein && <p className="text-xs text-gray-400 mt-0.5">Choose a soup →</p>}
+                    {item.optionalPlantain && !item.requiresProtein && <p className="text-xs text-gray-400 mt-0.5">Optional plantain →</p>}
                   </div>
                   <span className="text-xl text-gray-200 group-hover:text-[#0a3d20] transition-colors">›</span>
                 </div>
