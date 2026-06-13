@@ -17,6 +17,8 @@ const FOOD_PHOTO: Record<string, string> = {
   "Chicken":                 "/food/chicken.jpg",
   "Turkey":                  "/food/turkey.jpg",
   "Croaker Fish":            "/food/croaker-fish.jpg",
+  "Hake Fish":               "/food/hake-fish.jpg",
+  "Plantain":                "/food/plantain.jpg",
   "Efo Riro":                "/food/efo-riro.jpg",
   "Egusi":                   "/food/egusi.jpg",
   "Ewedu and Gbegiri":       "/food/ewedu-gbegiri.jpg",
@@ -330,16 +332,17 @@ export default function GuestOrderingApp({ initialTable }: { initialTable?: numb
           <h2 className="text-[1.6rem] font-bold text-gray-900 mb-1">Add plantain?</h2>
           <p className="text-sm text-gray-400 mb-6">Optional side with your {main.name}</p>
           <div className="space-y-3 pb-8">
-            {[
-              { label: "Yes, add plantain 🌴", val: true },
-              { label: "No thanks", val: false },
-            ].map(opt => (
-              <button key={String(opt.val)} onClick={() => { setPlantain(opt.val); advance("plantain"); }}
-                className="w-full text-left bg-white border-2 border-gray-100 hover:border-[#0a3d20] active:scale-[0.98] rounded-2xl px-5 py-5 font-bold text-gray-900 transition-all shadow-sm"
-                style={{ minHeight: 64 }}>
-                {opt.label}
-              </button>
-            ))}
+            <button onClick={() => { setPlantain(true); advance("plantain"); }}
+              className="w-full text-left bg-white border-2 border-gray-100 hover:border-[#0a3d20] active:scale-[0.98] rounded-2xl px-5 py-5 font-bold text-gray-900 transition-all shadow-sm flex items-center gap-4"
+              style={{ minHeight: 64 }}>
+              <FoodIcon name="Plantain" />
+              <span>Yes, add plantain</span>
+            </button>
+            <button onClick={() => { setPlantain(false); advance("plantain"); }}
+              className="w-full text-left bg-white border-2 border-gray-100 hover:border-[#0a3d20] active:scale-[0.98] rounded-2xl px-5 py-5 font-bold text-gray-900 transition-all shadow-sm"
+              style={{ minHeight: 64 }}>
+              No thanks
+            </button>
           </div>
         </div>
       )}
@@ -371,7 +374,7 @@ export default function GuestOrderingApp({ initialTable }: { initialTable?: numb
                   {soup    && <p className="text-sm text-gray-500">Soup: {soup}</p>}
                   {protein && <p className="text-sm text-gray-500">Protein: {protein}</p>}
                   {main.optionalPlantain && (
-                    <p className="text-sm text-gray-500">{plantain ? "🌴 With plantain" : "No plantain"}</p>
+                    <p className="text-sm text-gray-500">{plantain ? "With plantain" : "No plantain"}</p>
                   )}
                 </div>
               </div>

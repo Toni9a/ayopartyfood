@@ -1,13 +1,14 @@
 import { MenuItem } from "./types";
 
 // Rice dishes: no mixed protein
-export const PROTEINS_RICE    = ["Chicken", "Turkey", "Croaker Fish"];
+export const PROTEINS_RICE    = ["Chicken", "Turkey", "Croaker Fish", "Hake Fish"];
 // Swallow dishes: all proteins including mixed
 export const PROTEINS_SWALLOW = [
   "Mixed protein (Beef, shaki, ponmo, Inu eran)",
   "Chicken",
   "Turkey",
   "Croaker Fish",
+  "Hake Fish",
 ];
 export const SOUPS = ["Efo Riro", "Egusi", "Ewedu and Gbegiri"];
 
@@ -17,6 +18,7 @@ export const ALL_PROTEINS = [
   "Chicken",
   "Turkey",
   "Croaker Fish",
+  "Hake Fish",
 ];
 
 function item(
@@ -48,4 +50,5 @@ export const DEFAULT_MENU: MenuItem[] = [
   item("Chicken",           "protein", 20),
   item("Turkey",            "protein", 20),
   item("Croaker Fish",      "protein", 20),
+  item("Hake Fish",         "protein", 20),
 ];
