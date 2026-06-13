@@ -15,7 +15,7 @@ const NEXT: Record<OrderStatus, OrderStatus | null> = {
   ready: null,
 };
 
-type Tab = "orders" | "completed" | "groups" | "reset";
+type Tab = "orders" | "completed" | "groups" | "tables" | "reset";
 
 function waitingLabel(createdAt: string): string {
   const mins = Math.floor((Date.now() - new Date(createdAt).getTime()) / 60000);
@@ -40,6 +40,8 @@ export default function KitchenDashboard() {
   const [selectedName, setSelectedName] = useState("");
   const [stockOpen, setStockOpen] = useState(false);
   const [pulse, setPulse]         = useState(false);
+  const [selectedTable, setSelectedTable] = useState<number | null>(null);
+  const [search, setSearch]       = useState("");
 
   const refresh = useCallback(async () => {
     setPulse(true);
@@ -117,10 +119,11 @@ export default function KitchenDashboard() {
           ["orders",    `Live (${active.length})`],
           ["completed", `Done (${completed.length})`],
           ["groups",    "Groups"],
+          ["tables",    "Tables"],
           ["reset",     "Reset"],
         ] as [Tab, string][]).map(([t, label]) => (
-          <button key={t} onClick={() => setTab(t)}
-            className={`flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all ${
+          <button key={t} onClick={() => { setTab(t); setSelectedTable(null); setSearch(""); }}
+            className={`flex-1 py-2.5 rounded-xl text-xs font-semibold transition-all ${
               tab === t ? "bg-white shadow text-gray-900" : "text-gray-400 hover:text-gray-600"
             }`}>
             {label}
@@ -132,20 +135,31 @@ export default function KitchenDashboard() {
       {tab === "orders" && (
         <div className="space-y-4">
 
-          {/* Guest names strip */}
+          {/* Search + Guest names strip */}
           {guestNames.length > 0 && (
             <div>
-              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">
-                Guests ordered ({orders.length})
-              </p>
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+                  Guests ordered ({orders.length})
+                </p>
+              </div>
+              <input
+                type="text"
+                placeholder="Search name…"
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-800 bg-white focus:outline-none focus:ring-2 focus:ring-[#0a3d20] mb-3"
+              />
               <div className="flex flex-wrap gap-2">
-                {orders.map((o) => (
-                  <span key={o.id}
-                    className="inline-flex items-center gap-1.5 bg-white border border-gray-100 rounded-full px-3 py-1 text-xs font-semibold text-gray-700 shadow-sm">
-                    <span className={`w-1.5 h-1.5 rounded-full ${STATUS_META[o.status].dot}`} />
-                    {o.guestName} · T{o.tableNumber}
-                  </span>
-                ))}
+                {orders
+                  .filter(o => !search || o.guestName.toLowerCase().includes(search.toLowerCase()))
+                  .map((o) => (
+                    <span key={o.id}
+                      className="inline-flex items-center gap-1.5 bg-white border border-gray-100 rounded-full px-3 py-1 text-xs font-semibold text-gray-700 shadow-sm">
+                      <span className={`w-1.5 h-1.5 rounded-full ${STATUS_META[o.status].dot}`} />
+                      {o.guestName} · T{o.tableNumber}
+                    </span>
+                  ))}
               </div>
             </div>
           )}
@@ -316,6 +330,66 @@ export default function KitchenDashboard() {
           })()}
         </div>
       )}
+
+      {/* ── Tables ── */}
+      {tab === "tables" && (() => {
+        const tableNums = [...new Set(orders.map(o => o.tableNumber))].sort((a, b) => a - b);
+
+        if (selectedTable === null) {
+          return (
+            <div>
+              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-3">
+                {tableNums.length} table{tableNums.length !== 1 ? "s" : ""} with orders
+              </p>
+              {tableNums.length === 0 ? (
+                <p className="text-gray-300 text-center py-12 text-sm">No orders yet</p>
+              ) : (
+                <div className="grid grid-cols-3 gap-3">
+                  {tableNums.map(t => {
+                    const tOrders = orders.filter(o => o.tableNumber === t);
+                    const live = tOrders.filter(o => o.status !== "ready").length;
+                    const done = tOrders.filter(o => o.status === "ready").length;
+                    return (
+                      <button key={t} onClick={() => setSelectedTable(t)}
+                        className="bg-white border border-gray-100 rounded-2xl px-4 py-5 text-left shadow-sm hover:border-[#0a3d20] active:scale-[0.97] transition-all">
+                        <p className="text-xl font-black text-gray-900">T{t}</p>
+                        <p className="text-xs text-gray-400 mt-1">{tOrders.length} guest{tOrders.length !== 1 ? "s" : ""}</p>
+                        <div className="flex gap-1.5 mt-2 flex-wrap">
+                          {live > 0 && <span className="text-[10px] font-bold bg-blue-50 text-blue-500 rounded-full px-2 py-0.5">{live} live</span>}
+                          {done > 0 && <span className="text-[10px] font-bold bg-green-50 text-green-600 rounded-full px-2 py-0.5">{done} done</span>}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          );
+        }
+
+        const tableOrders = orders.filter(o => o.tableNumber === selectedTable);
+        return (
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+              <button onClick={() => setSelectedTable(null)}
+                className="text-xs text-gray-400 font-semibold flex items-center gap-1">
+                ← Tables
+              </button>
+              <h2 className="text-lg font-black text-gray-900">Table {selectedTable}</h2>
+              <span className="text-xs text-gray-400">{tableOrders.length} order{tableOrders.length !== 1 ? "s" : ""}</span>
+            </div>
+            {tableOrders.length === 0 ? (
+              <p className="text-gray-300 text-center py-12 text-sm">No orders for this table</p>
+            ) : (
+              <div className="space-y-3">
+                {tableOrders.map(order => (
+                  <OrderCard key={order.id} order={order} onAdvance={advanceStatus} />
+                ))}
+              </div>
+            )}
+          </div>
+        );
+      })()}
 
       {/* ── Reset ── */}
       {tab === "reset" && (
